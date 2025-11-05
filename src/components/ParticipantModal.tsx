@@ -1,6 +1,7 @@
 "use client";
 import { X } from "lucide-react";
 import Modal from "./ui/Modal";
+import { getAvatarUrl } from "@/utils/image";
 
 type Props = {
   open: boolean;
@@ -37,12 +38,7 @@ export default function ParticipantModal({
 
         {/* Avatar */}
         <img
-          src={
-            participant.avatarUrl ||
-            `https://placehold.co/200x200/111827/9ca3af/png?text=${encodeURIComponent(
-              participant.name?.charAt(0) || "U"
-            )}`
-          }
+          src={getAvatarUrl(participant)}
           alt={participant.name}
           className="w-28 h-28 rounded-full object-cover mb-4 border border-gray-800 mt-6"
         />

@@ -7,6 +7,7 @@ import { db } from "@/lib/firebase";
 import PreferencesModal from "@/components/PreferencesModal";
 import ParticipantModal from "@/components/ParticipantModal";
 import RevealModal from "@/components/RevealModal";
+import { getAvatarUrl } from "@/utils/image";
 
 type User = {
   id: string;
@@ -161,12 +162,7 @@ export default function HomePage() {
             {myPickedUser ? (
               <div className="flex-1 flex flex-col items-center justify-center md:px-42 md:py-6">
                 <img
-                  src={
-                    myPickedUser.avatarUrl ||
-                    `https://placehold.co/160x160/111827/9ca3af/png?text=${encodeURIComponent(
-                      myPickedUser.name?.charAt(0) || "U"
-                    )}`
-                  }
+                  src={getAvatarUrl(myPickedUser)}
                   className="w-28 h-28 rounded-full mb-4 border border-gray-800"
                 />
                 <div className="text-lg font-semibold mb-2">
@@ -213,12 +209,7 @@ export default function HomePage() {
                     className="relative group"
                   >
                     <img
-                      src={
-                        u.avatarUrl ||
-                        `https://placehold.co/80x80/111827/9ca3af/png?text=${encodeURIComponent(
-                          u.name?.charAt(0) || "U"
-                        )}`
-                      }
+                      src={getAvatarUrl(u)}
                       alt={u.name}
                       className="w-12 h-12 md:w-14 md:h-14 rounded-full object-cover border border-gray-800 hover:border-blue-500 transition-all"
                     />
