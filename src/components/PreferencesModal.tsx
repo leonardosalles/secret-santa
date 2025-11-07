@@ -76,7 +76,7 @@ export default function PreferencesModal({
         {/* Botão fechar */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 text-gray-400 hover:text-gray-200 transition p-4 md:-top-4 md:-right-4"
+          className="absolute top-3 right-3 text-gray-400 hover:text-gray-200 transition p-4 md:-top-4 md:-right-4 cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
