@@ -1,7 +1,7 @@
 "use client";
 import { Gift, LogOut, Home, Eye, EyeOff, Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { collection, doc, onSnapshot, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import PreferencesModal from "@/components/PreferencesModal";
@@ -76,8 +76,18 @@ export default function HomePage() {
     setShowParticipant(true);
   };
 
-  const myPicked = users.find((u) => u.id === userId)?.picked || null;
-  const myPickedUser = users.find((u) => u.id === myPicked) || null;
+  // 🔹 Calcula o amigo secreto sorteado do usuário atual
+  const me = useMemo(
+    () => users.find((u) => u.id === userId) || null,
+    [users, userId]
+  );
+  const myPickedUser = useMemo(
+    () => (me?.picked ? users.find((u) => u.id === me.picked) || null : null),
+    [users, me]
+  );
+
+  // 🔹 Saber se ainda está carregando o dado específico do meu amigo
+  const isLoadingMyPicked = loadingUsers || (userId && !me);
 
   const handleReveal = async () => {
     if (!userId) return;
@@ -185,7 +195,14 @@ export default function HomePage() {
               )}
             </div>
 
-            {myPickedUser ? (
+            {/* 🔹 Estado de carregamento: mantém layout consistente */}
+            {isLoadingMyPicked ? (
+              <div className="flex flex-col items-center justify-center md:px-42 md:py-6 relative animate-pulse">
+                <div className="relative w-28 h-28 mb-4 rounded-full bg-gray-800" />
+                <div className="h-5 w-32 bg-gray-800 rounded mb-2" />
+                <div className="w-full h-10 bg-gray-800 rounded mt-2" />
+              </div>
+            ) : myPickedUser ? (
               <div className="flex flex-col items-center justify-center md:px-42 md:py-6 relative">
                 <div className="relative w-28 h-28 mb-4">
                   <img
