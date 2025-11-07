@@ -7,6 +7,7 @@ export default function proxy(req: NextRequest) {
   const cookie = req.cookies.get("amigo_secreto_user");
   const userCookie = cookie?.value?.trim();
 
+  // check protected routes
   const isProtected = protectedRoutes.some(
     (route) => url.pathname === route || url.pathname.startsWith(route + "/")
   );
