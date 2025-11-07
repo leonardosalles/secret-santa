@@ -2,7 +2,7 @@
 import { X, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import Modal from "./ui/Modal";
-import { doc, getDoc, updateDoc } from "@/lib/firebase";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 type Props = {
@@ -44,6 +44,7 @@ export default function PreferencesModal({
 
   const remove = (i: number) =>
     setPrefs((s) => s.filter((_, idx) => idx !== i));
+
   const discard = () => {
     setPrefs(original);
     onClose();
@@ -53,10 +54,16 @@ export default function PreferencesModal({
     if (!userId) return;
     setLoading(true);
     try {
+      // 🧹 Limpeza antes de salvar
+      const cleaned = prefs
+        .map((p) => p.trim()) // remove espaços extras
+        .filter((p) => p.length > 0); // remove vazios
+
       const ref = doc(db, "users", userId);
-      await updateDoc(ref, { preferences: prefs });
-      setOriginal(prefs);
-      onSaved?.(prefs);
+      await updateDoc(ref, { preferences: cleaned });
+      setOriginal(cleaned);
+      setPrefs(cleaned);
+      onSaved?.(cleaned);
       onClose();
     } finally {
       setLoading(false);

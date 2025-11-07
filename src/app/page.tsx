@@ -1,5 +1,5 @@
 "use client";
-import { Gift, LogOut, Home } from "lucide-react";
+import { Gift, LogOut, Home, Eye, EyeOff, Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { collection, doc, onSnapshot, updateDoc } from "firebase/firestore";
@@ -25,13 +25,26 @@ export default function HomePage() {
   const [users, setUsers] = useState<User[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const [loadingUsers, setLoadingUsers] = useState(true);
-
   const [revealing, setRevealing] = useState(false);
   const [showRevealModal, setShowRevealModal] = useState(false);
 
+  // 👁️ controle de visibilidade do amigo secreto
+  const [isHidden, setIsHidden] = useState(false);
+
   const router = useRouter();
 
-  // ✅ Listener em tempo real do Firestore
+  // 🔹 Restaurar visibilidade do amigo secreto
+  useEffect(() => {
+    const hiddenState = localStorage.getItem("secret_hidden");
+    if (hiddenState) setIsHidden(hiddenState === "true");
+  }, []);
+
+  // 🔹 Salvar visibilidade
+  useEffect(() => {
+    localStorage.setItem("secret_hidden", String(isHidden));
+  }, [isHidden]);
+
+  // 🔹 Firestore listener
   useEffect(() => {
     const cookie = document.cookie
       .split("; ")
@@ -78,10 +91,10 @@ export default function HomePage() {
       updatedUsers.filter((u) => u.picked).map((u) => u.picked as string)
     );
 
+    // Garante que não tira a si mesmo nem alguém que já foi sorteado
     let candidates = updatedUsers.filter(
       (u) => u.id !== userId && !pickedIds.has(u.id)
     );
-
     candidates = candidates.filter((u) => u.picked !== userId);
 
     if (candidates.length === 0) {
@@ -95,7 +108,6 @@ export default function HomePage() {
     }
 
     const choice = candidates[Math.floor(Math.random() * candidates.length)];
-
     await updateDoc(doc(db, "users", userId), { picked: choice.id });
 
     setParticipant(choice);
@@ -117,11 +129,11 @@ export default function HomePage() {
           </h1>
         </div>
 
-        {/* Navegação principal (desktop) */}
+        {/* Navegação desktop */}
         <nav className="hidden md:flex items-center gap-6">
           <button
             onClick={() => setActiveTab("home")}
-            className={`hover:text-blue-400 ${
+            className={`hover:text-blue-400 cursor-pointer ${
               activeTab === "home" ? "text-blue-400 font-medium" : ""
             }`}
           >
@@ -129,19 +141,19 @@ export default function HomePage() {
           </button>
           <button
             onClick={() => setShowPrefs(true)}
-            className="hover:text-blue-400"
+            className="hover:text-blue-400 cursor-pointer"
           >
             Presentes
           </button>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 rounded-lg px-4 py-2 font-medium"
+            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 rounded-lg px-4 py-2 font-medium cursor-pointer"
           >
             <LogOut className="w-4 h-4" /> Sair
           </button>
         </nav>
 
-        {/* Botão sair no mobile */}
+        {/* Botão sair mobile */}
         <button
           onClick={handleLogout}
           className="md:hidden flex items-center gap-2 bg-red-600 hover:bg-red-700 rounded-lg px-3 py-2 text-sm font-medium"
@@ -150,34 +162,62 @@ export default function HomePage() {
         </button>
       </header>
 
-      {/* Content area */}
+      {/* Conteúdo */}
       <main className="flex-1 p-6 pb-24 md:pb-6 pt-22 md:pt-24">
         <div className="max-w-3xl mx-auto flex flex-col gap-6">
           {/* Meu amigo secreto */}
-          <section className="bg-gray-900/70 border border-gray-800 rounded-2xl p-6 flex flex-col">
-            <h3 className="text-lg font-semibold mb-4 text-blue-400">
-              Meu Amigo Secreto
-            </h3>
+          <section className="relative bg-gray-900/70 border border-gray-800 rounded-2xl p-6 flex flex-col">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-blue-400">
+                Meu Amigo Secreto
+              </h3>
+              {myPickedUser && (
+                <button
+                  onClick={() => setIsHidden((prev) => !prev)}
+                  className="text-gray-400 hover:text-blue-400 transition cursor-pointer"
+                >
+                  {isHidden ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              )}
+            </div>
 
             {myPickedUser ? (
-              <div className="flex-1 flex flex-col items-center justify-center md:px-42 md:py-6">
-                <img
-                  src={getAvatarUrl(myPickedUser)}
-                  className="w-28 h-28 rounded-full mb-4 border border-gray-800"
-                />
-                <div className="text-lg font-semibold mb-2">
-                  {myPickedUser.name}
+              <div className="flex flex-col items-center justify-center md:px-42 md:py-6 relative">
+                <div className="relative w-28 h-28 mb-4">
+                  <img
+                    src={getAvatarUrl(myPickedUser)}
+                    className={`w-28 h-28 rounded-full border border-gray-800 object-cover transition-all ${
+                      isHidden ? "blur-md brightness-50" : ""
+                    }`}
+                  />
+                  {isHidden && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Lock className="w-8 h-8 text-gray-400" />
+                    </div>
+                  )}
+                </div>
+
+                <div
+                  className={`text-lg font-semibold mb-2 transition-all ${
+                    isHidden ? "text-gray-500 blur-[2px] select-none" : ""
+                  }`}
+                >
+                  {isHidden ? "********" : myPickedUser.name}
                 </div>
 
                 <button
                   onClick={() => openParticipant(myPickedUser)}
-                  className="bg-blue-800 hover:bg-blue-700 px-4 py-2 rounded-lg w-full mt-2"
+                  className="px-4 py-2 rounded-lg w-full mt-2 transition-all bg-blue-800 hover:bg-blue-700 cursor-pointer"
                 >
                   Ver Presentes
                 </button>
               </div>
             ) : (
-              <div className="flex-1 flex flex-col items-center justify-center md:px-42 md:py-6">
+              <div className="flex flex-col items-center justify-center md:px-42 md:py-6">
                 <p className="text-sm text-gray-400 mb-4 border rounded-lg p-6 w-full text-center border-gray-800 my-6">
                   Você ainda não tirou ninguém.
                 </p>
@@ -197,7 +237,6 @@ export default function HomePage() {
             <h3 className="text-lg font-semibold mb-4 text-blue-400">
               Participantes
             </h3>
-
             {loadingUsers ? (
               <p className="text-sm text-gray-400">Carregando...</p>
             ) : (
@@ -206,7 +245,7 @@ export default function HomePage() {
                   <button
                     key={u.id}
                     onClick={() => openParticipant(u)}
-                    className="relative group"
+                    className="relative group cursor-pointer"
                   >
                     <img
                       src={getAvatarUrl(u)}
@@ -216,7 +255,6 @@ export default function HomePage() {
                     <span className="absolute left-1/2 -translate-x-1/2 mt-2 hidden group-hover:block bg-gray-800 text-gray-100 text-xs px-2 py-1 rounded-md whitespace-nowrap z-10 shadow-lg">
                       {u.name}
                     </span>
-
                     {u.preferences && u.preferences.length > 0 && (
                       <span className="absolute -bottom-1 -right-1 bg-blue-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
                         {u.preferences.length}
@@ -268,13 +306,11 @@ export default function HomePage() {
         userId={userId}
         onSaved={() => {}}
       />
-
       <ParticipantModal
         open={showParticipant}
         onClose={() => setShowParticipant(false)}
         participant={participant}
       />
-
       <RevealModal
         open={showRevealModal}
         onFinish={() => {
