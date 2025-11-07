@@ -2,7 +2,7 @@
 
 import { collection, db, doc, getDoc, getDocs, setDoc } from "@/lib/firebase";
 import { sha256 } from "@/utils/crypto";
-import { Gift } from "lucide-react";
+import { Eye, EyeOff, Gift } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function LoginPage() {
@@ -11,6 +11,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [mode, setMode] = useState<"login" | "register" | null>(null);
   const [message, setMessage] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const loadUsers = async () => {
@@ -83,7 +84,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-950 to-gray-900 text-gray-100 px-4">
       <div className="backdrop-blur-xl bg-gray-900/70 border border-gray-800 rounded-2xl shadow-xl p-6 w-full max-w-sm sm:max-w-md transition-all">
-        <div className="flex items-center gap-3 p-12 pt-6 justify-center">
+        <div className="flex items-center gap-3 pt-2 p-6 md:p-12 md:pt-6 justify-center">
           <Gift className="text-blue-400 w-6 h-6" />
           <h1 className="text-2xl font-semibold flex items-center gap-2">
             Amigo Secreto
@@ -134,14 +135,30 @@ export default function LoginPage() {
             <label className="block text-gray-300 mb-2 font-medium text-sm">
               {mode === "register" ? "Crie uma senha" : "Digite sua senha"}
             </label>
-            <input
-              type="password"
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-3 mb-4 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={mode === "register" ? "Nova senha..." : "Senha..."}
-            />
+
+            <div className="relative mb-4">
+              <input
+                type={showPassword ? "text" : "password"}
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-3 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={mode === "register" ? "Nova senha..." : "Senha..."}
+              />
+
+              {/* Botão olho */}
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200"
+              >
+                {showPassword ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
+              </button>
+            </div>
 
             {mode === "login" ? (
               <button
