@@ -35,7 +35,6 @@ export default function LoginPage() {
   };
 
   const doLogin = (userId: string) => {
-    // seta cookie e redireciona
     document.cookie = `amigo_secreto_user=${userId}; path=/; max-age=${
       60 * 60 * 24 * 7
     }`;
@@ -58,20 +57,16 @@ export default function LoginPage() {
     const hashed = await sha256(password);
     const ref = doc(db, "users", selectedUser.id);
 
-    // salva no Firestore
     await setDoc(
       ref,
       { ...selectedUser, passwordHash: hashed },
       { merge: true }
     );
 
-    // atualiza estado local para refletir a nova senha (evita precisar recarregar users)
     const updatedUser = { ...selectedUser, passwordHash: hashed };
     setSelectedUser(updatedUser);
     setMessage("✅ Senha criada! Entrando...");
 
-    // login automático após registro
-    // pequeno timeout para o usuário ver a mensagem (opcional)
     setTimeout(() => {
       doLogin(updatedUser.id);
     }, 600);
@@ -99,7 +94,7 @@ export default function LoginPage() {
         </div>
 
         <label className="block text-gray-300 mb-2 font-medium text-sm">
-          Selecione seu nome
+          Selecione seu Nome
         </label>
         <div className="relative mb-4">
           <select
