@@ -82,6 +82,8 @@ export default function HomePage() {
       (u) => u.id !== userId && !pickedIds.has(u.id)
     );
 
+    candidates = candidates.filter((u) => u.picked !== userId);
+
     if (candidates.length === 0) {
       candidates = updatedUsers.filter((u) => u.id !== userId);
     }
