@@ -115,7 +115,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-950 to-gray-900 text-gray-100">
       {/* Header */}
-      <header className="w-full flex items-center justify-between px-6 py-4 bg-gray-900/80 backdrop-blur-xl border-b border-gray-800 fixed">
+      <header className="w-full flex items-center justify-between px-6 py-4 bg-gray-900/80 backdrop-blur-xl border-b border-gray-800 fixed z-50">
         <div className="flex items-center gap-3">
           <Gift className="text-blue-400 w-6 h-6" />
           <h1 className="text-xl font-semibold flex items-center gap-2">
@@ -126,6 +126,7 @@ export default function HomePage() {
           </h1>
         </div>
 
+        {/* Navegação principal (desktop) */}
         <nav className="hidden md:flex items-center gap-6">
           <button
             onClick={() => setActiveTab("home")}
@@ -148,6 +149,14 @@ export default function HomePage() {
             <LogOut className="w-4 h-4" /> Sair
           </button>
         </nav>
+
+        {/* Botão sair no mobile */}
+        <button
+          onClick={handleLogout}
+          className="md:hidden flex items-center gap-2 bg-red-600 hover:bg-red-700 rounded-lg px-3 py-2 text-sm font-medium"
+        >
+          <LogOut className="w-4 h-4" /> Sair
+        </button>
       </header>
 
       {/* Content area */}
