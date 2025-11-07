@@ -28,23 +28,18 @@ export default function HomePage() {
   const [revealing, setRevealing] = useState(false);
   const [showRevealModal, setShowRevealModal] = useState(false);
 
-  // 👁️ controle de visibilidade do amigo secreto
   const [isHidden, setIsHidden] = useState(false);
-
   const router = useRouter();
 
-  // 🔹 Restaurar visibilidade do amigo secreto
   useEffect(() => {
     const hiddenState = localStorage.getItem("secret_hidden");
     if (hiddenState) setIsHidden(hiddenState === "true");
   }, []);
 
-  // 🔹 Salvar visibilidade
   useEffect(() => {
     localStorage.setItem("secret_hidden", String(isHidden));
   }, [isHidden]);
 
-  // 🔹 Firestore listener
   useEffect(() => {
     const cookie = document.cookie
       .split("; ")
@@ -76,7 +71,6 @@ export default function HomePage() {
     setShowParticipant(true);
   };
 
-  // 🔹 Calcula o amigo secreto sorteado do usuário atual
   const me = useMemo(
     () => users.find((u) => u.id === userId) || null,
     [users, userId]
@@ -86,7 +80,6 @@ export default function HomePage() {
     [users, me]
   );
 
-  // 🔹 Saber se ainda está carregando o dado específico do meu amigo
   const isLoadingMyPicked = loadingUsers || (userId && !me);
 
   const handleReveal = async () => {
@@ -101,7 +94,6 @@ export default function HomePage() {
       updatedUsers.filter((u) => u.picked).map((u) => u.picked as string)
     );
 
-    // Garante que não tira a si mesmo nem alguém que já foi sorteado
     let candidates = updatedUsers.filter(
       (u) => u.id !== userId && !pickedIds.has(u.id)
     );
@@ -195,12 +187,14 @@ export default function HomePage() {
               )}
             </div>
 
-            {/* 🔹 Estado de carregamento: mantém layout consistente */}
+            {/* Skeleton */}
             {isLoadingMyPicked ? (
-              <div className="flex flex-col items-center justify-center md:px-42 md:py-6 relative animate-pulse">
-                <div className="relative w-28 h-28 mb-4 rounded-full bg-gray-800" />
-                <div className="h-5 w-32 bg-gray-800 rounded mb-2" />
-                <div className="w-full h-10 bg-gray-800 rounded mt-2" />
+              <div className="flex flex-col items-center justify-center md:py-6 animate-pulse">
+                <div className="relative w-28 h-28 mb-4">
+                  <div className="w-28 h-28 rounded-full bg-gray-800 border border-gray-800" />
+                </div>
+                <div className="h-5 w-32 bg-gray-800 rounded mb-3" />
+                <div className="w-full max-w-xs h-10 bg-gray-800 rounded mt-3" />
               </div>
             ) : myPickedUser ? (
               <div className="flex flex-col items-center justify-center md:px-42 md:py-6 relative">
@@ -217,7 +211,6 @@ export default function HomePage() {
                     </div>
                   )}
                 </div>
-
                 <div
                   className={`text-lg font-semibold mb-2 transition-all ${
                     isHidden ? "text-gray-500 blur-[2px] select-none" : ""
@@ -225,10 +218,9 @@ export default function HomePage() {
                 >
                   {isHidden ? "********" : myPickedUser.name}
                 </div>
-
                 <button
                   onClick={() => openParticipant(myPickedUser)}
-                  className="px-4 py-2 rounded-lg w-full mt-2 transition-all bg-blue-800 hover:bg-blue-700 cursor-pointer"
+                  className="px-4 py-2 rounded-lg w-full max-w-xs mt-2 transition-all bg-blue-800 hover:bg-blue-700 cursor-pointer"
                 >
                   Ver Presentes
                 </button>
@@ -241,7 +233,7 @@ export default function HomePage() {
                 <button
                   onClick={() => setShowRevealModal(true)}
                   disabled={revealing || !userId}
-                  className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg w-full"
+                  className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg w-full max-w-xs"
                 >
                   Revelar amigo secreto
                 </button>
