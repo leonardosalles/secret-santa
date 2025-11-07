@@ -115,7 +115,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-950 to-gray-900 text-gray-100">
       {/* Header */}
-      <header className="w-full flex items-center justify-between px-6 py-4 bg-gray-900/80 backdrop-blur-xl border-b border-gray-800">
+      <header className="w-full flex items-center justify-between px-6 py-4 bg-gray-900/80 backdrop-blur-xl border-b border-gray-800 fixed">
         <div className="flex items-center gap-3">
           <Gift className="text-blue-400 w-6 h-6" />
           <h1 className="text-xl font-semibold flex items-center gap-2">
@@ -151,7 +151,7 @@ export default function HomePage() {
       </header>
 
       {/* Content area */}
-      <main className="flex-1 p-6 pb-24 md:pb-6">
+      <main className="flex-1 p-6 pb-24 md:pb-6 pt-22 md:pt-24">
         <div className="max-w-3xl mx-auto flex flex-col gap-6">
           {/* Meu amigo secreto */}
           <section className="bg-gray-900/70 border border-gray-800 rounded-2xl p-6 flex flex-col">
