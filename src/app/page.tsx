@@ -2,7 +2,7 @@
 import { Gift, LogOut, Home } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { collection, doc, getDocs, updateDoc } from "@/lib/firebase";
+import { collection, doc, onSnapshot, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import PreferencesModal from "@/components/PreferencesModal";
 import ParticipantModal from "@/components/ParticipantModal";
@@ -24,13 +24,14 @@ export default function HomePage() {
   const [participant, setParticipant] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
-  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [loadingUsers, setLoadingUsers] = useState(true);
 
   const [revealing, setRevealing] = useState(false);
   const [showRevealModal, setShowRevealModal] = useState(false);
 
   const router = useRouter();
 
+  // ✅ Listener em tempo real do Firestore
   useEffect(() => {
     const cookie = document.cookie
       .split("; ")
@@ -39,22 +40,18 @@ export default function HomePage() {
       const id = cookie.split("=")[1];
       setUserId(id);
     }
-    loadAllUsers();
-  }, []);
 
-  async function loadAllUsers() {
-    setLoadingUsers(true);
-    try {
-      const snap = await getDocs(collection(db, "users"));
-      const list: User[] = snap.docs.map((d) => ({
+    const unsubscribe = onSnapshot(collection(db, "users"), (snapshot) => {
+      const list: User[] = snapshot.docs.map((d) => ({
         id: d.id,
         ...(d.data() as any),
       }));
       setUsers(list);
-    } finally {
       setLoadingUsers(false);
-    }
-  }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const handleLogout = () => {
     document.cookie = "amigo_secreto_user=; path=/; max-age=0";
@@ -66,18 +63,12 @@ export default function HomePage() {
     setShowParticipant(true);
   };
 
-  const handleSavedPrefs = () => {
-    loadAllUsers();
-  };
-
   const myPicked = users.find((u) => u.id === userId)?.picked || null;
   const myPickedUser = users.find((u) => u.id === myPicked) || null;
 
   const handleReveal = async () => {
     if (!userId) return;
     setRevealing(true);
-
-    await loadAllUsers();
 
     const updatedUsers = [...users];
     const me = updatedUsers.find((u) => u.id === userId);
@@ -104,8 +95,6 @@ export default function HomePage() {
     const choice = candidates[Math.floor(Math.random() * candidates.length)];
 
     await updateDoc(doc(db, "users", userId), { picked: choice.id });
-
-    await loadAllUsers();
 
     setParticipant(choice);
     setShowParticipant(true);
@@ -275,7 +264,7 @@ export default function HomePage() {
           setActiveTab("home");
         }}
         userId={userId}
-        onSaved={handleSavedPrefs}
+        onSaved={() => {}}
       />
 
       <ParticipantModal
