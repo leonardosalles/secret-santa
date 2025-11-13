@@ -88,8 +88,8 @@ export default function LoginPage() {
           <Gift className="text-blue-400 w-6 h-6" />
           <h1 className="text-2xl font-semibold flex items-center gap-2">
             Amigo Secreto
-            <span className="bg-gradient-to-r from-pink-500 to-purple-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-md">
-              2025
+            <span className="bg-gradient-to-r from-blue-700 to-blue-800 via-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-md">
+              {process.env.NEXT_PUBLIC_APP_YEAR}
             </span>
           </h1>
         </div>

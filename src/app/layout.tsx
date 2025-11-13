@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Amigo Secreto - 2025",
-  description: "Amigo Secreto - 2025",
+  title: `Amigo Secreto - ${process.env.NEXT_PUBLIC_APP_YEAR}`,
+  description: `Amigo Secreto - ${process.env.NEXT_PUBLIC_APP_YEAR}`,
 };
 
 export default function RootLayout({

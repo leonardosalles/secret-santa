@@ -125,8 +125,8 @@ export default function HomePage() {
           <Gift className="text-blue-400 w-6 h-6" />
           <h1 className="text-xl font-semibold flex items-center gap-2">
             Amigo Secreto
-            <span className="bg-gradient-to-r from-pink-500 to-purple-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-md">
-              2025
+            <span className="bg-gradient-to-r from-blue-700 to-blue-800 via-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-md">
+              {process.env.NEXT_PUBLIC_APP_YEAR}
             </span>
           </h1>
         </div>
@@ -213,7 +213,7 @@ export default function HomePage() {
                     {isHidden && (
                       <div className="w-28 h-28 rounded-full border border-gray-800 overflow-hidden relative">
                         {/* Camada de gradiente "base" (simulando uma foto) */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-blue-700 to-blue-900 via-blue-800" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-700 to-blue-800 via-blue-600" />
 
                         {/* Camada de blur translúcido */}
                         <div className="absolute inset-0 backdrop-blur-xl bg-gray-950/60 flex items-center justify-center transition-all duration-300">
