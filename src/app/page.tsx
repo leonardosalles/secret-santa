@@ -199,17 +199,29 @@ export default function HomePage() {
             ) : myPickedUser ? (
               <div className="flex flex-col items-center justify-center md:px-42 md:py-6 relative">
                 <div className="relative w-28 h-28 mb-4">
-                  <img
-                    src={getAvatarUrl(myPickedUser)}
-                    className={`w-28 h-28 rounded-full border border-gray-800 object-cover transition-all ${
-                      isHidden ? "blur-md brightness-50" : ""
-                    }`}
-                  />
-                  {isHidden && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <Lock className="w-8 h-8 text-gray-400" />
-                    </div>
-                  )}
+                  <div className="relative w-28 h-28 mb-4">
+                    {/* Imagem real */}
+                    {!isHidden && (
+                      <img
+                        src={getAvatarUrl(myPickedUser)}
+                        alt={myPickedUser.name}
+                        className="w-28 h-28 rounded-full border border-gray-800 object-cover"
+                      />
+                    )}
+
+                    {/* Avatar ofuscado com gradiente e blur */}
+                    {isHidden && (
+                      <div className="w-28 h-28 rounded-full border border-gray-800 overflow-hidden relative">
+                        {/* Camada de gradiente "base" (simulando uma foto) */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-700 to-blue-900 via-blue-800" />
+
+                        {/* Camada de blur translúcido */}
+                        <div className="absolute inset-0 backdrop-blur-xl bg-gray-950/60 flex items-center justify-center transition-all duration-300">
+                          <Lock className="w-8 h-8 text-gray-300" />
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div
                   className={`text-lg font-semibold mb-2 transition-all ${
