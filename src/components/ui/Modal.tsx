@@ -1,5 +1,5 @@
 "use client";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 type ModalProps = {
@@ -9,22 +9,19 @@ type ModalProps = {
 };
 
 export default function Modal({ open, onClose, children }: ModalProps) {
-  const [mounted, setMounted] = useState(open);
-
   useEffect(() => {
-    if (open) {
-      setMounted(true);
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-  }, [open]);
-
-  const handleAnimationComplete = () => {
-    if (!open) setMounted(false);
-  };
-
-  if (!mounted) return null;
+    if (!open) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previous;
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open, onClose]);
 
   return (
     <AnimatePresence>
@@ -56,9 +53,11 @@ export default function Modal({ open, onClose, children }: ModalProps) {
               opacity: 0,
               transition: { duration: 0.45, ease: "easeInOut" },
             }}
-            onAnimationComplete={handleAnimationComplete}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Detalhes do amigo secreto"
             className="w-full md:w-auto md:max-w-lg md:rounded-2xl md:border md:border-gray-800 md:bg-gray-900 md:p-6 
-                       bg-gray-900 rounded-t-2xl border-t border-gray-800 shadow-2xl md:min-w-[600px]"
+                       bg-gray-900 rounded-t-2xl border-t border-gray-800 shadow-2xl md:min-w-[min(600px,90vw)] max-h-[90dvh] overflow-y-auto"
           >
             {children}
           </motion.div>

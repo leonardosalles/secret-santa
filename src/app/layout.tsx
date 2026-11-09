@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: `Amigo Secreto - ${process.env.NEXT_PUBLIC_APP_YEAR}`,
-  description: `Amigo Secreto - ${process.env.NEXT_PUBLIC_APP_YEAR}`,
+  title: `Amigo Secreto - ${process.env.NEXT_PUBLIC_APP_YEAR || "2025"}`,
+  description: `Amigo Secreto - ${process.env.NEXT_PUBLIC_APP_YEAR || "2025"}`,
 };
 
 export default function RootLayout({
@@ -23,7 +23,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="pt-BR">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

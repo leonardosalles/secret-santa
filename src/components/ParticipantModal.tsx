@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import { X } from "lucide-react";
 import Modal from "./ui/Modal";
 import { getAvatarUrl } from "@/utils/image";
@@ -37,7 +38,7 @@ export default function ParticipantModal({
         </button>
 
         {/* Avatar */}
-        <img
+        <Image unoptimized width={112} height={112}
           src={getAvatarUrl(participant)}
           alt={participant.name}
           className="w-28 h-28 rounded-full object-cover mb-4 border border-gray-800 mt-6"

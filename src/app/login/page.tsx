@@ -1,25 +1,42 @@
 "use client";
 
-import { collection, db, doc, getDoc, getDocs, setDoc } from "@/lib/firebase";
-import { sha256 } from "@/utils/crypto";
+import { collection, db, doc, getDoc, getDocsFromServer, getFirebaseErrorMessage, setDoc } from "@/lib/firebase";
+import { useRouter } from "next/navigation";
+import { runFirebaseWrite } from "@/lib/app-config";
+import { hashPassword, verifyPassword } from "@/utils/crypto";
+import { prepareDrawSession } from "@/lib/draw-session";
 import { Eye, EyeOff, Gift } from "lucide-react";
 import { useEffect, useState } from "react";
 
+type LoginUser = { id: string; name?: string; passwordHash?: string };
+
 export default function LoginPage() {
-  const [users, setUsers] = useState<any[]>([]);
-  const [selectedUser, setSelectedUser] = useState<any | null>(null);
+  const router = useRouter();
+  const [users, setUsers] = useState<LoginUser[]>([]);
+  const [selectedUser, setSelectedUser] = useState<LoginUser | null>(null);
   const [password, setPassword] = useState("");
   const [mode, setMode] = useState<"login" | "register" | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
+  const [loadingUsers, setLoadingUsers] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
+    let active = true;
     const loadUsers = async () => {
-      const snapshot = await getDocs(collection(db, "users"));
-      const list = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setUsers(list);
+      try {
+        const snapshot = await getDocsFromServer(collection(db, "users"));
+        if (active) setUsers(snapshot.docs.map((d) => ({ ...d.data(), id: d.id })));
+      } catch (error) {
+        console.error("Falha ao carregar participantes do Firestore", error);
+        if (active) setLoadError(getFirebaseErrorMessage(error));
+      } finally {
+        if (active) setLoadingUsers(false);
+      }
     };
-    loadUsers();
+    void loadUsers();
+    return () => { active = false; };
   }, []);
 
   const handleSelectUser = async (id: string) => {
@@ -39,38 +56,42 @@ export default function LoginPage() {
     document.cookie = `amigo_secreto_user=${userId}; path=/; max-age=${
       60 * 60 * 24 * 7
     }`;
-    window.location.href = "/";
+    router.push("/");
+    router.refresh();
   };
 
   const handleLogin = async () => {
-    if (!selectedUser) return;
-    const hashed = await sha256(password);
-    if (hashed === selectedUser.passwordHash) {
+    if (!selectedUser || submitting || !password) return;
+    setSubmitting(true);
+    setMessage("");
+    try {
+      if (!await verifyPassword(password, selectedUser.passwordHash || "")) {
+        setMessage("Senha incorreta.");
+        return;
+      }
+      await prepareDrawSession(selectedUser.id, password);
       doLogin(selectedUser.id);
-    } else {
-      setMessage("❌ Senha incorreta!");
-      setTimeout(() => setMessage(""), 3000);
+    } catch {
+      setMessage("Não foi possível desbloquear sua chave privada. Confira a senha e tente novamente. Sua chave não foi substituída.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const handleRegister = async () => {
-    if (!selectedUser || !password) return;
-    const hashed = await sha256(password);
-    const ref = doc(db, "users", selectedUser.id);
-
-    await setDoc(
-      ref,
-      { ...selectedUser, passwordHash: hashed },
-      { merge: true }
-    );
-
-    const updatedUser = { ...selectedUser, passwordHash: hashed };
-    setSelectedUser(updatedUser);
-    setMessage("✅ Senha criada! Entrando...");
-
-    setTimeout(() => {
-      doLogin(updatedUser.id);
-    }, 600);
+    if (!selectedUser || !password || submitting) return;
+    setSubmitting(true);
+    setMessage("");
+    try {
+      const hashed = await hashPassword(password);
+      await runFirebaseWrite(() => setDoc(doc(db, "users", selectedUser.id), { passwordHash: hashed }, { merge: true }));
+      await prepareDrawSession(selectedUser.id, password);
+      doLogin(selectedUser.id);
+    } catch {
+      setMessage("Não foi possível preparar sua conta. Tente novamente.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -82,8 +103,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-950 to-gray-900 text-gray-100 px-4">
-      <div className="backdrop-blur-xl bg-gray-900/70 border border-gray-800 rounded-2xl shadow-xl p-6 w-full max-w-sm sm:max-w-md transition-all">
+    <div className="login-page min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-950 to-gray-900 text-gray-100 px-4">
+      <div className="login-card backdrop-blur-xl bg-gray-900/70 border border-gray-800 rounded-2xl shadow-xl p-6 w-full max-w-sm sm:max-w-md transition-all">
         <div className="flex items-center gap-3 pt-2 p-6 md:p-12 md:pt-6 justify-center">
           <Gift className="text-blue-400 w-6 h-6" />
           <h1 className="text-2xl font-semibold flex items-center gap-2">
@@ -94,17 +115,18 @@ export default function LoginPage() {
           </h1>
         </div>
 
-        <label className="block text-gray-300 mb-2 font-medium text-sm">
+        <div className="login-intro"><span className="eyebrow">QUE BOM TER VOCÊ AQUI</span><h2>Entre na surpresa.</h2><p>Encontre seu nome e prepare-se para fazer alguém sorrir.</p></div>
+        <label htmlFor="participant" className="block text-gray-300 mb-2 font-medium text-sm">
           Selecione seu Nome
         </label>
         <div className="relative mb-4">
-          <select
+          <select id="participant" disabled={loadingUsers || !!loadError}
             className="appearance-none w-full bg-gray-800 border border-gray-700 rounded-lg px-3 pr-10 py-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
             onChange={(e) => handleSelectUser(e.target.value)}
             defaultValue=""
           >
             <option value="" disabled>
-              Escolha...
+              {loadingUsers ? "Carregando participantes..." : users.length ? "Escolha..." : "Nenhum participante encontrado"}
             </option>
             {users.map((u) => (
               <option key={u.id} value={u.id}>
@@ -130,6 +152,7 @@ export default function LoginPage() {
           </span>
         </div>
 
+        {loadError && <p role="alert" className="mb-4 text-sm text-red-300">{loadError} <button className="underline" onClick={() => window.location.reload()}>Tentar novamente</button></p>}
         {mode && (
           <>
             <label className="block text-gray-300 mb-2 font-medium text-sm">
@@ -149,6 +172,7 @@ export default function LoginPage() {
               {/* Botão olho */}
               <button
                 type="button"
+                aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
                 onClick={() => setShowPassword((v) => !v)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200"
               >
@@ -163,16 +187,18 @@ export default function LoginPage() {
             {mode === "login" ? (
               <button
                 onClick={handleLogin}
+                disabled={submitting || !password}
                 className="w-full bg-blue-600 text-white rounded-lg py-3 font-medium hover:bg-blue-700 transition active:scale-95"
               >
-                Entrar
+                {submitting ? "Preparando acesso..." : "Entrar"}
               </button>
             ) : (
               <button
                 onClick={handleRegister}
+                disabled={submitting || !password}
                 className="w-full bg-green-600 text-white rounded-lg py-3 font-medium hover:bg-green-700 transition active:scale-95"
               >
-                Registrar
+                {submitting ? "Preparando acesso..." : "Registrar"}
               </button>
             )}
           </>

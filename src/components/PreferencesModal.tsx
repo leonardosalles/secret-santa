@@ -3,6 +3,7 @@ import { X, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import Modal from "./ui/Modal";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { runFirebaseWrite } from "@/lib/app-config";
 import { db } from "@/lib/firebase";
 
 type Props = {
@@ -60,7 +61,7 @@ export default function PreferencesModal({
         .filter((p) => p.length > 0); // remove vazios
 
       const ref = doc(db, "users", userId);
-      await updateDoc(ref, { preferences: cleaned });
+      await runFirebaseWrite(() => updateDoc(ref, { preferences: cleaned }));
       setOriginal(cleaned);
       setPrefs(cleaned);
       onSaved?.(cleaned);

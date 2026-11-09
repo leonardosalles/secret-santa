@@ -1,11 +1,12 @@
 "use client";
 
-import { initializeApp } from "firebase/app";
+import { getApp, getApps, initializeApp } from "firebase/app";
 import {
   collection,
   doc,
   getDoc,
   getDocs,
+  getDocsFromServer,
   getFirestore,
   setDoc,
   updateDoc,
@@ -21,6 +22,19 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID!,
 };
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
-export { collection, doc, getDoc, getDocs, setDoc, updateDoc };
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const databaseId = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_ID?.trim() || "(default)";
+export const db = getFirestore(app, databaseId);
+
+export function getFirebaseErrorMessage(error: unknown): string {
+  const code = typeof error === "object" && error !== null && "code" in error
+    ? String(error.code) : "unknown";
+  if (code === "permission-denied") {
+    return "O Firebase recusou a leitura. Verifique as regras de acesso do Firestore.";
+  }
+  if (code === "not-found" || code === "unavailable") {
+    return "Não foi possível acessar o Firestore. Verifique a conexão e se o banco configurado existe no projeto Firebase.";
+  }
+  return "Não foi possível carregar os dados do Firebase. Tente novamente.";
+}
+export { collection, doc, getDoc, getDocs, getDocsFromServer, setDoc, updateDoc };
