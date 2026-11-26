@@ -43,3 +43,11 @@ Resultados antigos em texto aberto são preservados como pares fixos e migrados 
 **Limite da proteção:** isto protege a leitura do banco em repouso. Não prova sigilo contra o dono da aplicação: quem controla o código pode capturar senhas, trocar chaves ou inspecionar os pares durante a geração no navegador que inicia o sorteio. Senhas fracas continuam sujeitas a tentativas offline. A autenticação atual por cookie e as regras do Firestore também não foram substituídas por esta mudança. Para uma garantia contra o organizador ativo, é necessário um sorteador independente ou protocolo distribuído auditado.
 
 As regras do Firestore precisam permitir a transação que atualiza `picked` dos participantes e cria o marcador da edição, além da preparação de `drawIdentity` no login. Essas regras não são alteradas automaticamente pelo app.
+
+## Equipes da gincana
+
+O cartão “A turma virou competição” abre a seleção de jogadores. Informe o número de jogadores por equipe. Cada jogador entra exatamente uma vez; os times são preenchidos até esse limite e a última equipe fica com os participantes restantes. Por exemplo, 15 jogadores com limite de 4 formam equipes de 4, 4, 4 e 3. As equipes seguem a sequência Alfa, Beta, Gama, Delta, Épsilon, Zeta, Eta e Teta, com cores próprias e brasões de letras gregas. Os integrantes são embaralhados a cada sorteio.
+
+Cada geração cria um documento em `editions/{NEXT_PUBLIC_APP_YEAR}/teamDraws/{id}` com `teams` (nome, cor, brasão, IDs e nomes dos jogadores), `playersPerTeam`, `drawnBy`, `year` e `createdAt` do servidor. A modal recupera o resultado mais recente e permite novos sorteios sem apagar os anteriores. As regras do Firestore precisam permitir leitura e criação nessa coleção. Nenhum dado de amigo secreto é copiado para os times.
+
+A gincana pode ser preparada antes da liberação do amigo secreto. Em modo teste, os resultados ficam apenas na sessão e nenhuma escrita é enviada ao Firebase.

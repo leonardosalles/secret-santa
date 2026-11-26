@@ -1,10 +1,11 @@
 "use client";
 import Image from "next/image";
-import { Gift, LogOut, Home, Eye, EyeOff, Lock, ArrowUpRight, Sparkles, Users, Heart } from "lucide-react";
+import { Gift, LogOut, Home, Eye, EyeOff, Lock, ArrowUpRight, Sparkles, Users, Heart, Trophy } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { collection, onSnapshot, addDoc, serverTimestamp, query, orderBy, limit } from "firebase/firestore";
 import { db, getFirebaseErrorMessage } from "@/lib/firebase";
+import TeamsModal from "@/components/TeamsModal";
 import PreferencesModal from "@/components/PreferencesModal";
 import ParticipantModal from "@/components/ParticipantModal";
 import RevealModal from "@/components/RevealModal";
@@ -26,6 +27,7 @@ type User = {
 
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState("home");
+  const [showTeams, setShowTeams] = useState(false);
   const [showPrefs, setShowPrefs] = useState(false);
   const [showParticipant, setShowParticipant] = useState(false);
   const [participant, setParticipant] = useState<User | null>(null);
@@ -403,6 +405,11 @@ export default function HomePage() {
               {displayedStarter && <div className="mt-5 flex items-center gap-4 rounded-xl border border-gray-800 p-4"><Image unoptimized width={56} height={56} src={getAvatarUrl(displayedStarter)} alt={displayedStarter.name} className="h-14 w-14 rounded-full object-cover" /><div><p className="text-xs text-gray-400">Quem começa a rodada é...</p><p className="mt-1 text-lg font-semibold text-blue-400">{displayedStarter.name}</p></div></div>}
             </div>
           </section>
+          <section className="arena-entry">
+            <div className="arena-entry-icon"><Trophy size={34} /></div>
+            <div className="flex-1"><span className="eyebrow">DESAFIO ACEITO?</span><h3 className="mt-2 text-2xl font-bold">A turma virou competição.</h3><p className="mt-2 text-sm text-gray-400">Times equilibrados, brasões exclusivos e muita história para contar.</p></div>
+            <button onClick={() => setShowTeams(true)} className="arena-generate">Montar equipes <ArrowUpRight size={18} /></button>
+          </section>
           {/* Participantes */}
           <section className="bg-gray-900/70 border border-gray-800 rounded-2xl p-6">
             <div className="participants-heading"><div><span className="eyebrow"><Users size={14} /> A TURMA TODA</span><h3>Quem faz parte da surpresa</h3></div><span className="count-pill">{users.length} participantes</span></div>
@@ -467,6 +474,7 @@ export default function HomePage() {
       </div>
 
       {/* Modais */}
+      <TeamsModal open={showTeams} onClose={() => setShowTeams(false)} users={users} userId={userId} loading={loadingUsers} usersError={loadError} />
       <PreferencesModal
         open={showPrefs}
         onClose={() => {

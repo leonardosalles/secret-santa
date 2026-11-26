@@ -6,9 +6,11 @@ type ModalProps = {
   open: boolean;
   onClose: () => void;
   children: ReactNode;
+  label?: string;
+  className?: string;
 };
 
-export default function Modal({ open, onClose, children }: ModalProps) {
+export default function Modal({ open, onClose, children, label = "Detalhes do amigo secreto", className = "" }: ModalProps) {
   useEffect(() => {
     if (!open) return;
     const previous = document.body.style.overflow;
@@ -55,9 +57,9 @@ export default function Modal({ open, onClose, children }: ModalProps) {
             }}
             role="dialog"
             aria-modal="true"
-            aria-label="Detalhes do amigo secreto"
-            className="w-full md:w-auto md:max-w-lg md:rounded-2xl md:border md:border-gray-800 md:bg-gray-900 md:p-6 
-                       bg-gray-900 rounded-t-2xl border-t border-gray-800 shadow-2xl md:min-w-[min(600px,90vw)] max-h-[90dvh] overflow-y-auto"
+            aria-label={label}
+            className={`${className} w-full md:w-auto md:max-w-lg md:rounded-2xl md:border md:border-gray-800 md:bg-gray-900 md:p-6
+                       bg-gray-900 rounded-t-2xl border-t border-gray-800 shadow-2xl md:min-w-[min(600px,90vw)] max-h-[90dvh] overflow-y-auto`}
           >
             {children}
           </motion.div>
